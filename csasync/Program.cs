@@ -8,51 +8,41 @@ namespace csasync
 
   class Program
     {
-        private Task WaitAsync(int ms)
-        {
-            return Task.Delay(ms);
-        }
-
-        public Task Wait2Async(int ms)
-        {
-            return Task.Run(() => Thread.Sleep(ms));
-        }
+        const int waitTime = 100;
 
         static void Main(string[] args)
         {
             var t = new Stopwatch();
             t.Start();
-            var prog = new Program();
-            switch(args[0])
-            {
-                case "1":
-                    prog.Run1().Wait();
-                    break;
-                case "2":
-                    prog.Run2().Wait();
-                    break;
-                default:
-                    Console.WriteLine($"Unknown command: {args[0]}");
-                    return;
-            }
+            RunAsync(args[0], args[1]).Wait();
             t.Stop();
             Console.WriteLine($"Run time: {t.ElapsedMilliseconds}");
         }
+        
+        static Task RunAsync(string runArg, string waitArg) 
+        {
+            switch(runArg)
+            {
+                case "1": return Run1Async(waitArg);
+                case "2": return Run2Async(waitArg);
+            }
+            throw new Exception($"Unknown run arg: {runArg}");
+        }
 
-        public async Task Run1() 
+        static async Task Run1Async(string waitArg) 
         {
             for (int i = 0; i < 100; i++)
             {
-                await WaitAsync(100);
+                await WaitAsync(waitArg);
             }
         }
 
-        public async Task Run2()
+        static async Task Run2Async(string waitArg)
         {
             var tasks = new Task[100];
             for (int i = 0; i < 100; i++)
             {
-                tasks[i] = WaitAsync(100);
+                tasks[i] = WaitAsync(waitArg);
             }
 
             for (int i = 0; i < 100; i++)
@@ -60,5 +50,17 @@ namespace csasync
                 await tasks[i];
             }
         }
+        
+        static Task WaitAsync(string arg)
+        {
+            switch(arg) {
+                case "1": return Wait1Async();
+                case "2": return Wait2Async();
+            }
+            throw new Exception($"Unexpected wait arg: {arg}");
+        }
+
+        static Task Wait1Async() => Task.Delay(waitTime);
+        static Task Wait2Async() => Task.Run(() => Thread.Sleep(waitTime));
     }
 }
